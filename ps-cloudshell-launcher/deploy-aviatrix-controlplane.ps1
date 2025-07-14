@@ -1202,7 +1202,7 @@ function Invoke-TerraformDeployment {
                 Write-Host "$($Config.UserPublicIP)" -NoNewline -ForegroundColor Yellow
                 Write-Host " (CloudShell)" -ForegroundColor Gray
                 
-                if ($Config.AdditionalManagementIPs -and $Config.AdditionalManagementIPs.Count -gt 0) {
+                if ($Config.AdditionalManagementIPs -and @($Config.AdditionalManagementIPs).Count -gt 0) {
                     foreach ($ip in $Config.AdditionalManagementIPs) {
                         Write-Host "   • " -NoNewline -ForegroundColor White
                         Write-Host "$ip" -NoNewline -ForegroundColor Yellow
@@ -1256,7 +1256,7 @@ function Show-PostDeploymentInfo {
     
     # Build the list of all authorized IPs
     $allAuthorizedIPs = @("$($Config.UserPublicIP) (CloudShell)")
-    if ($Config.AdditionalManagementIPs -and $Config.AdditionalManagementIPs.Count -gt 0) {
+    if ($Config.AdditionalManagementIPs -and @($Config.AdditionalManagementIPs).Count -gt 0) {
         $allAuthorizedIPs += $Config.AdditionalManagementIPs | ForEach-Object { "$_ (Management)" }
     }
     
