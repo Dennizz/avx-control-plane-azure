@@ -879,8 +879,9 @@ function Get-DeploymentParameters {
         Write-SectionEnd "Cyan"
     }
     
-    # CoPilot Decision
-    if (-not $PSBoundParameters.ContainsKey('IncludeCopilot')) {
+    # CoPilot Decision - Only prompt if not explicitly set via parameter
+    $copilotExplicitlySet = $PSBoundParameters.ContainsKey('IncludeCopilot')
+    if (-not $copilotExplicitlySet) {
         Write-Section "CoPilot Analytics Configuration" "Cyan"
         Write-Info "CoPilot provides advanced analytics and monitoring for your Aviatrix network."
         Write-Info "CoPilot can be deployed later if you choose not to include it now."
@@ -893,6 +894,8 @@ function Get-DeploymentParameters {
             -HelpText "Choose 'y' for yes or 'n' for no"
         $IncludeCopilot = $copilotChoice -in @("y", "yes")
         Write-SectionEnd "Cyan"
+    } else {
+        Write-Info "CoPilot setting provided via parameter: $IncludeCopilot"
     }
     
     # Get public IP
