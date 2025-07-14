@@ -972,8 +972,8 @@ module "aviatrix_controlplane" {
   
   # Deployment Configuration
   module_config = {
-    accept_controller_subscription = $(-not $Config.MarketplaceStatus.ControllerSubscribed)
-    accept_copilot_subscription    = $(if ($Config.IncludeCopilot) { -not $Config.MarketplaceStatus.CopilotSubscribed } else { $false })
+    accept_controller_subscription = $(-not $Config.MarketplaceStatus.ControllerSubscribed).ToString().ToLower()
+    accept_copilot_subscription    = $(if ($Config.IncludeCopilot) { (-not $Config.MarketplaceStatus.CopilotSubscribed).ToString().ToLower() } else { "false" })
     controller_deployment          = true
     controller_initialization      = true
     copilot_deployment            = $($Config.IncludeCopilot.ToString().ToLower())
