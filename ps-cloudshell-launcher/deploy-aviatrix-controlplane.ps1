@@ -165,6 +165,19 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
+# Track if IncludeCopilot was explicitly provided
+# This is a workaround for PowerShell's behavior with default parameter values
+$script:IncludeCopilotExplicitlyProvided = $false
+if ($args -contains '-IncludeCopilot' -or $PSBoundParameters.ContainsKey('IncludeCopilot')) {
+    $script:IncludeCopilotExplicitlyProvided = $true
+}
+
+# Also check command line arguments more thoroughly
+$commandLineArgs = [Environment]::GetCommandLineArgs()
+if ($commandLineArgs -match '-IncludeCopilot') {
+    $script:IncludeCopilotExplicitlyProvided = $true
+}
+
 # Global variables
 $ModuleSource = "terraform-aviatrix-modules/azure-controlplane/aviatrix"
 $ModuleVersion = "1.1.0"
@@ -880,12 +893,9 @@ function Get-DeploymentParameters {
     }
     
     # CoPilot Decision - Check if parameter was explicitly provided
-    # We need to check the original command line args since PSBoundParameters doesn't include 
-    # parameters that match their default values
-    $copilotExplicitlySet = $args -contains '-IncludeCopilot' -or 
-                           ($PSBoundParameters.ContainsKey('IncludeCopilot')) -or
-                           ($MyInvocation.BoundParameters.ContainsKey('IncludeCopilot'))
+    $copilotExplicitlySet = $script:IncludeCopilotExplicitlyProvided
     
+    Write-Host "DEBUG: Command line args: $([Environment]::GetCommandLineArgs() -join ' ')" -ForegroundColor Magenta
     Write-Host "DEBUG: CoPilot explicitly set: $copilotExplicitlySet" -ForegroundColor Magenta
     Write-Host "DEBUG: Current IncludeCopilot value: $IncludeCopilot" -ForegroundColor Magenta
     Write-Host "DEBUG: PSBoundParameters keys: $($PSBoundParameters.Keys -join ', ')" -ForegroundColor Magenta
@@ -905,15 +915,6 @@ function Get-DeploymentParameters {
         Write-SectionEnd "Cyan"
     } else {
         Write-Info "CoPilot setting provided via parameter: $IncludeCopilot"
-    }
-    
-    # Ensure IncludeCopilot defaults to $true if not set
-    if (-not $copilotExplicitlySet -and -not $IncludeCopilot) {
-        # This handles the case where the user chose 'n' or 'no' in the prompt
-        # The $IncludeCopilot value is already set correctly by the prompt logic above
-    } elseif (-not $copilotExplicitlySet) {
-        # If no explicit parameter and user chose 'y'/'yes', $IncludeCopilot is already $true
-        # This branch exists for clarity but doesn't need to do anything
     }
     
     # Get public IP
