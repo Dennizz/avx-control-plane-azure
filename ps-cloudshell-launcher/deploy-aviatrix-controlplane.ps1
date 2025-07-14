@@ -1349,7 +1349,80 @@ try {
     # Check prerequisites
     Test-Prerequisites
     
-    # Get deployment parameters
+    # Handle destroy operations differently - skip configuration gathering
+    if ($TerraformAction -eq "destroy") {
+        Write-Banner "🗑️ Destroying Aviatrix Deployment" "Red"
+        
+        # Check if terraform directory exists
+        if (-not (Test-Path $TerraformDir)) {
+            Write-Error "Terraform directory not found: $TerraformDir"
+            Write-Host "Cannot destroy deployment - no terraform state found." -ForegroundColor Yellow
+            Write-Host "The deployment may have already been destroyed or was never created." -ForegroundColor Gray
+            exit 1
+        }
+        
+        Write-Info "Found existing Terraform deployment in: $TerraformDir"
+        
+        if (-not $SkipConfirmation) {
+            Write-Host ""
+            Write-Host "⚠️  WARNING: This will permanently delete all Aviatrix resources!" -ForegroundColor Red
+            Write-Host "This includes:" -ForegroundColor Yellow
+            Write-Host "├─ Aviatrix Controller VM and associated resources" -ForegroundColor Gray
+            Write-Host "├─ CoPilot VM (if deployed)" -ForegroundColor Gray
+            Write-Host "├─ Azure AD App Registration" -ForegroundColor Gray
+            Write-Host "├─ Virtual Networks and Security Groups" -ForegroundColor Gray
+            Write-Host "└─ All data and configurations" -ForegroundColor Gray
+            Write-Host ""
+            
+            do {
+                Write-Host "Type " -NoNewline -ForegroundColor White
+                Write-Host "DESTROY" -NoNewline -ForegroundColor Red
+                Write-Host " to confirm deletion: " -NoNewline -ForegroundColor White
+                $confirmation = Read-Host
+                
+                if ($confirmation -eq "DESTROY") {
+                    Write-Success "Destruction confirmed"
+                    break
+                } elseif ($confirmation -eq "") {
+                    Write-Info "Operation cancelled by user"
+                    exit 0
+                } else {
+                    Write-Warning "Invalid confirmation. Type 'DESTROY' exactly (case sensitive) or press Enter to cancel."
+                }
+            } while ($true)
+        }
+        
+        # Execute terraform destroy directly
+        Write-Banner "🔥 Executing Terraform Destroy" "Red"
+        
+        Push-Location $TerraformDir
+        try {
+            Write-Step "Initializing Terraform..."
+            terraform init
+            if ($LASTEXITCODE -ne 0) { throw "Terraform init failed" }
+            
+            Write-Step "Destroying all resources..."
+            terraform destroy -auto-approve
+            if ($LASTEXITCODE -ne 0) { throw "Terraform destroy failed" }
+            
+            Write-Banner "✅ Destruction Complete" "Green"
+            Write-Success "All Aviatrix resources have been successfully destroyed"
+            Write-Info "Terraform state and configuration files remain in: $TerraformDir"
+            Write-Info "You can safely delete this directory if you don't plan to redeploy"
+            
+        } catch {
+            Write-Banner "❌ Destruction Failed" "Red"
+            Write-Error "Failed to destroy resources: $($_.Exception.Message)"
+            Write-Info "Some resources may still exist. Check the Azure portal and clean up manually if needed."
+            exit 1
+        } finally {
+            Pop-Location
+        }
+        
+        return
+    }
+    
+    # For non-destroy operations, get deployment parameters
     $config = Get-DeploymentParameters
     
     # Check marketplace subscriptions with the actual CoPilot setting
