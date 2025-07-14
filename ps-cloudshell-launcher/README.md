@@ -182,6 +182,8 @@ Re-run the script with `-IncludeCopilot $true` to add CoPilot to an existing dep
 | "IP detection failed" | Manually specify `-IncomingMgmtCIDRs` parameter |
 | "Marketplace agreement failed" | Ensure you have permissions to accept marketplace terms |
 
+> **Note**: When using `-TerraformAction "destroy"`, the script automatically skips Azure AD permission checks and marketplace subscription verification since these are not needed for destroying existing resources.
+
 ### Getting Help
 - **Aviatrix Documentation**: https://docs.aviatrix.com
 - **Support Portal**: https://support.aviatrix.com
