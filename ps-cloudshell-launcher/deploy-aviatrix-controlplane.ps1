@@ -936,6 +936,21 @@ function New-TerraformConfiguration {
     # Format CIDRs for terraform - each CIDR quoted and comma-separated
     $cidrString = ($allCidrs | ForEach-Object { "`"$_`"" }) -join ', '
     
+    # Calculate marketplace subscription flags
+    $acceptControllerSubscription = (-not $Config.MarketplaceStatus.ControllerSubscribed).ToString().ToLower()
+    $acceptCopilotSubscription = if ($Config.IncludeCopilot) { 
+        (-not $Config.MarketplaceStatus.CopilotSubscribed).ToString().ToLower() 
+    } else { 
+        "false" 
+    }
+    
+    # Debug output for marketplace subscription flags
+    Write-Step "Marketplace subscription configuration:"
+    Write-Host "  Controller already subscribed: $($Config.MarketplaceStatus.ControllerSubscribed)" -ForegroundColor Gray
+    Write-Host "  CoPilot already subscribed: $($Config.MarketplaceStatus.CopilotSubscribed)" -ForegroundColor Gray
+    Write-Host "  accept_controller_subscription = $acceptControllerSubscription" -ForegroundColor Gray
+    Write-Host "  accept_copilot_subscription = $acceptCopilotSubscription" -ForegroundColor Gray
+    
     # Create main.tf
     $mainTf = @"
 terraform {
@@ -972,8 +987,8 @@ module "aviatrix_controlplane" {
   
   # Deployment Configuration
   module_config = {
-    accept_controller_subscription = $(-not $Config.MarketplaceStatus.ControllerSubscribed).ToString().ToLower()
-    accept_copilot_subscription    = $(if ($Config.IncludeCopilot) { (-not $Config.MarketplaceStatus.CopilotSubscribed).ToString().ToLower() } else { "false" })
+    accept_controller_subscription = $acceptControllerSubscription
+    accept_copilot_subscription    = $acceptCopilotSubscription
     controller_deployment          = true
     controller_initialization      = true
     copilot_deployment            = $($Config.IncludeCopilot.ToString().ToLower())
