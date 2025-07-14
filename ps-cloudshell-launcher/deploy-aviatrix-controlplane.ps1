@@ -879,8 +879,17 @@ function Get-DeploymentParameters {
         Write-SectionEnd "Cyan"
     }
     
-    # CoPilot Decision - Only prompt if not explicitly set via parameter
-    $copilotExplicitlySet = $PSBoundParameters.ContainsKey('IncludeCopilot')
+    # CoPilot Decision - Check if parameter was explicitly provided
+    # We need to check the original command line args since PSBoundParameters doesn't include 
+    # parameters that match their default values
+    $copilotExplicitlySet = $args -contains '-IncludeCopilot' -or 
+                           ($PSBoundParameters.ContainsKey('IncludeCopilot')) -or
+                           ($MyInvocation.BoundParameters.ContainsKey('IncludeCopilot'))
+    
+    Write-Host "DEBUG: CoPilot explicitly set: $copilotExplicitlySet" -ForegroundColor Magenta
+    Write-Host "DEBUG: Current IncludeCopilot value: $IncludeCopilot" -ForegroundColor Magenta
+    Write-Host "DEBUG: PSBoundParameters keys: $($PSBoundParameters.Keys -join ', ')" -ForegroundColor Magenta
+    
     if (-not $copilotExplicitlySet) {
         Write-Section "CoPilot Analytics Configuration" "Cyan"
         Write-Info "CoPilot provides advanced analytics and monitoring for your Aviatrix network."
@@ -896,6 +905,15 @@ function Get-DeploymentParameters {
         Write-SectionEnd "Cyan"
     } else {
         Write-Info "CoPilot setting provided via parameter: $IncludeCopilot"
+    }
+    
+    # Ensure IncludeCopilot defaults to $true if not set
+    if (-not $copilotExplicitlySet -and -not $IncludeCopilot) {
+        # This handles the case where the user chose 'n' or 'no' in the prompt
+        # The $IncludeCopilot value is already set correctly by the prompt logic above
+    } elseif (-not $copilotExplicitlySet) {
+        # If no explicit parameter and user chose 'y'/'yes', $IncludeCopilot is already $true
+        # This branch exists for clarity but doesn't need to do anything
     }
     
     # Get public IP
