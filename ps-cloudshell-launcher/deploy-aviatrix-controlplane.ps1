@@ -1358,16 +1358,16 @@ function Show-PostDeploymentInfo {
 try {
     Write-Banner "Aviatrix Control Plane Deployment Wizard" "Cyan"
     
-    Write-Host "╭─ Welcome to the Aviatrix Azure Deployment Wizard!" -ForegroundColor Cyan
-    Write-Host "│" -ForegroundColor Cyan
-    Write-Host "├─ Purpose: Deploy a complete Aviatrix control plane in Azure" -ForegroundColor White
-    Write-Host "├─ Includes: Controller, initialization, and Azure account onboarding" -ForegroundColor White
-    Write-Host "├─ Optimized: For Azure Cloud Shell with user-friendly prompts" -ForegroundColor White
-    Write-Host "└─ Secure: Follows security best practices and least privilege" -ForegroundColor White
+    Write-Host "  Welcome to the Aviatrix Azure Deployment Wizard!" -ForegroundColor White
+    Write-Host "" -ForegroundColor White
+    Write-Host "  Purpose: Deploy a complete Aviatrix control plane in Azure" -ForegroundColor White
+    Write-Host "  Includes: Controller, initialization, and Azure account onboarding" -ForegroundColor White
+    Write-Host "  Optimized: For Azure Cloud Shell with user-friendly prompts" -ForegroundColor White
+    Write-Host "  Secure: Follows security best practices and least privilege" -ForegroundColor White
     Write-Host ""
     
-    Write-Info "This wizard will guide you through each step of the deployment process."
-    Write-Hint "You can press Ctrl+C at any time to cancel the deployment safely."
+    Write-Info "  This wizard will guide you through each step of the deployment process."
+    Write-Hint "  You can press Ctrl+C at any time to cancel the deployment safely."
     Write-Host ""
     
     # Check prerequisites
