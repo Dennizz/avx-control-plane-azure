@@ -181,7 +181,10 @@ $AvailableLocations = @(
 function Write-Banner {
     param([string]$Message, [string]$Color = "Cyan")
     Write-Host ""
-    Write-Host "╔" + ("═" * 74) + "╗" -ForegroundColor $Color
+    
+    # Create the border lines
+    $topBorder = "╔" + ("═" * 74) + "╗"
+    $bottomBorder = "╚" + ("═" * 74) + "╝"
     
     # Calculate proper spacing for centering
     # Border total width is 76 (74 + 2 corners), so content line should also be 76 total
@@ -190,8 +193,12 @@ function Write-Banner {
     $leftSpaces = [math]::Floor(($contentWidth - $Message.Length) / 2)
     $rightSpaces = $contentWidth - $Message.Length - $leftSpaces
     
-    Write-Host "║" + (" " * $leftSpaces) + $Message + (" " * $rightSpaces) + "║" -ForegroundColor $Color
-    Write-Host "╚" + ("═" * 74) + "╝" -ForegroundColor $Color
+    # Create the content line
+    $contentLine = "║" + (" " * $leftSpaces) + $Message + (" " * $rightSpaces) + "║"
+    
+    Write-Host $topBorder -ForegroundColor $Color
+    Write-Host $contentLine -ForegroundColor $Color
+    Write-Host $bottomBorder -ForegroundColor $Color
     Write-Host ""
 }
 
