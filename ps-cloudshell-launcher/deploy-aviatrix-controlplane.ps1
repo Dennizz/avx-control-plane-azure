@@ -257,20 +257,20 @@ function Write-InputPrompt {
     param([string]$Message, [string]$Example = "", [bool]$Required = $true)
     Write-Host ""
     if ($Required) {
-        Write-Host "┌─ " -NoNewline -ForegroundColor Cyan
-        Write-Host "$Message" -NoNewline -ForegroundColor White
-        Write-Host " *" -ForegroundColor Red
+        Write-Host "  ┌─ " -NoNewline -ForegroundColor Cyan
+        Write-Host "  $Message" -NoNewline -ForegroundColor White
+        Write-Host "   *" -ForegroundColor Red
     } else {
-        Write-Host "┌─ " -NoNewline -ForegroundColor Cyan
-        Write-Host "$Message" -ForegroundColor White
+        Write-Host "  ┌─ " -NoNewline -ForegroundColor Cyan
+        Write-Host "  $Message" -ForegroundColor White
     }
     
     if ($Example) {
-        Write-Host "│  " -NoNewline -ForegroundColor Cyan
-        Write-Host "Example: " -NoNewline -ForegroundColor DarkGray
-        Write-Host "$Example" -ForegroundColor Gray
+        Write-Host "  │  " -NoNewline -ForegroundColor Cyan
+        Write-Host "  Example: " -NoNewline -ForegroundColor DarkGray
+        Write-Host "  $Example" -ForegroundColor Gray
     }
-    Write-Host "└─ " -NoNewline -ForegroundColor Cyan
+    Write-Host "  └─ " -NoNewline -ForegroundColor Cyan
 }
 
 function Get-UserInput {
@@ -464,22 +464,22 @@ function Test-Prerequisites {
             }
             
             if ($hasAppRegPermission) {
-                Write-Success "Azure AD app registration permissions verified"
+                Write-Success "  Azure AD app registration permissions verified"
             } else {
-                Write-Error "Insufficient Azure AD permissions for app registration"
+                Write-Error "  Insufficient Azure AD permissions for app registration"
                 Write-Host ""
-                Write-Host "This deployment requires permissions to create Azure AD applications and service principals." -ForegroundColor Yellow
-                Write-Host "You may need to:" -ForegroundColor Yellow
-                Write-Host "  1. Run 'az login' again to refresh your authentication token" -ForegroundColor Gray
-                Write-Host "  2. Ensure you have one of these roles in Azure AD:" -ForegroundColor Gray
-                Write-Host "     • Global Administrator" -ForegroundColor Gray
-                Write-Host "     • Application Administrator" -ForegroundColor Gray
-                Write-Host "     • Application Developer" -ForegroundColor Gray
-                Write-Host "     • Cloud Application Administrator" -ForegroundColor Gray
-                Write-Host "  3. Or have your tenant configured to allow users to register applications" -ForegroundColor Gray
+                Write-Host "  This deployment requires permissions to create Azure AD applications and service principals." -ForegroundColor Yellow
+                Write-Host "  You may need to:" -ForegroundColor Yellow
+                Write-Host "    1. Run 'az login' again to refresh your authentication token" -ForegroundColor Gray
+                Write-Host "    2. Ensure you have one of these roles in Azure AD:" -ForegroundColor Gray
+                Write-Host "       • Global Administrator" -ForegroundColor Gray
+                Write-Host "       • Application Administrator" -ForegroundColor Gray
+                Write-Host "       • Application Developer" -ForegroundColor Gray
+                Write-Host "       • Cloud Application Administrator" -ForegroundColor Gray
+                Write-Host "    3. Or have your tenant configured to allow users to register applications" -ForegroundColor Gray
                 Write-Host ""
-                Write-Host "Please resolve the permissions issue and run the script again." -ForegroundColor Yellow
-                Write-Host "If you continue to experience issues, contact your Azure AD administrator." -ForegroundColor Gray
+                Write-Host "  Please resolve the permissions issue and run the script again." -ForegroundColor Yellow
+                Write-Host "  If you continue to experience issues, contact your Azure AD administrator." -ForegroundColor Gray
                 throw "Azure AD permissions required"
             }
             
@@ -487,13 +487,13 @@ function Test-Prerequisites {
             if ($_.Exception.Message -eq "Azure AD permissions required") {
                 throw # Re-throw our custom error
             }
-            Write-Warning "Could not verify Azure AD permissions automatically"
-            Write-Host "  This may be due to tenant restrictions or network connectivity" -ForegroundColor Gray
-            Write-Host "  The deployment will proceed, but may fail if you lack app registration permissions" -ForegroundColor Gray
+            Write-Warning "  Could not verify Azure AD permissions automatically"
+            Write-Host "    This may be due to tenant restrictions or network connectivity" -ForegroundColor Gray
+            Write-Host "    The deployment will proceed, but may fail if you lack app registration permissions" -ForegroundColor Gray
             Write-Host ""
-            Write-Host "If deployment fails, try running 'az login' again and ensure you have:" -ForegroundColor Yellow
-            Write-Host "  • Global Administrator or Application Administrator role" -ForegroundColor Gray
-            Write-Host "  • Permission to create Azure AD applications" -ForegroundColor Gray
+            Write-Host "  If deployment fails, try running 'az login' again and ensure you have:" -ForegroundColor Yellow
+            Write-Host "    • Global Administrator or Application Administrator role" -ForegroundColor Gray
+            Write-Host "    • Permission to create Azure AD applications" -ForegroundColor Gray
         }
     } else {
         Write-Step "Skipping Azure AD app registration check (destroy operation)"
