@@ -186,8 +186,8 @@ function Write-Banner {
     $totalWidth = 76
     $borderChars = $totalWidth - 2  # Account for corner characters
     
-    $topBorder = "╔" + ("═" * $borderChars) + "╗"
-    $bottomBorder = "╚" + ("═" * $borderChars) + "╝"
+    $topBorder = "  ╔" + ("═" * $borderChars) + "╗"
+    $bottomBorder = "  ╚" + ("═" * $borderChars) + "╝"
     
     # Content area is total width minus the 2 side border characters
     $contentAreaWidth = $totalWidth - 2
@@ -202,7 +202,7 @@ function Write-Banner {
     $leftSpaces = [math]::Floor(($contentAreaWidth - $messageLength) / 2)
     $rightSpaces = $contentAreaWidth - $messageLength - $leftSpaces
     
-    $contentLine = "║" + (" " * $leftSpaces) + $Message + (" " * $rightSpaces) + "║"
+    $contentLine = "  ║" + (" " * $leftSpaces) + $Message + (" " * $rightSpaces) + "║"
     
     Write-Host $topBorder -ForegroundColor $Color
     Write-Host $contentLine -ForegroundColor $Color
@@ -225,32 +225,32 @@ function Write-SectionEnd {
 
 function Write-Step {
     param([string]$Message)
-    Write-Host "▶  $Message" -ForegroundColor Yellow
+    Write-Host "  ▶   $Message" -ForegroundColor Yellow
 }
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "✅  $Message" -ForegroundColor Green
+    Write-Host "  ✅   $Message" -ForegroundColor Green
 }
 
 function Write-Warning {
     param([string]$Message)
-    Write-Host "⚠️  $Message" -ForegroundColor Yellow
+    Write-Host "  ⚠️   $Message" -ForegroundColor Yellow
 }
 
 function Write-Error {
     param([string]$Message)
-    Write-Host "❌  $Message" -ForegroundColor Red
+    Write-Host "  ❌   $Message" -ForegroundColor Red
 }
 
 function Write-Info {
     param([string]$Message)
-    Write-Host "$Message" -ForegroundColor Cyan
+    Write-Host "  $Message" -ForegroundColor Cyan
 }
 
 function Write-Hint {
     param([string]$Message)
-    Write-Host "TIP: $Message" -ForegroundColor DarkCyan
+    Write-Host "  TIP: $Message" -ForegroundColor DarkCyan
 }
 
 function Write-InputPrompt {
