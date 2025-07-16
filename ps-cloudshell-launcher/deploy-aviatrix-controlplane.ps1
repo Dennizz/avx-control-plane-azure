@@ -889,9 +889,9 @@ function Get-DeploymentParameters {
     # CoPilot Decision - Use nullable boolean approach for proper parameter detection
     $copilotExplicitlySet = $null -ne $IncludeCopilot
     
-    Write-Host "DEBUG: IncludeCopilot value: $IncludeCopilot (Type: $($IncludeCopilot.GetType().Name))" -ForegroundColor Magenta
-    Write-Host "DEBUG: CoPilot explicitly set: $copilotExplicitlySet" -ForegroundColor Magenta
-    Write-Host "DEBUG: PSBoundParameters keys: $($PSBoundParameters.Keys -join ', ')" -ForegroundColor Magenta
+    # Write-Host "DEBUG: IncludeCopilot value: $IncludeCopilot (Type: $($IncludeCopilot.GetType().Name))" -ForegroundColor Magenta
+    # Write-Host "DEBUG: CoPilot explicitly set: $copilotExplicitlySet" -ForegroundColor Magenta
+    # Write-Host "DEBUG: PSBoundParameters keys: $($PSBoundParameters.Keys -join ', ')" -ForegroundColor Magenta
     
     if (-not $copilotExplicitlySet) {
         Write-Section "CoPilot Analytics Configuration" "Cyan"
@@ -965,11 +965,11 @@ function New-TerraformConfiguration {
     }
     
     # Debug output for marketplace subscription flags
-    Write-Step "Marketplace subscription configuration:"
-    Write-Host "  Controller already subscribed: $($Config.MarketplaceStatus.ControllerSubscribed)" -ForegroundColor Gray
-    Write-Host "  CoPilot already subscribed: $($Config.MarketplaceStatus.CopilotSubscribed)" -ForegroundColor Gray
-    Write-Host "  accept_controller_subscription = $acceptControllerSubscription" -ForegroundColor Gray
-    Write-Host "  accept_copilot_subscription = $acceptCopilotSubscription" -ForegroundColor Gray
+    # Write-Step "Marketplace subscription configuration:"
+    # Write-Host "  Controller already subscribed: $($Config.MarketplaceStatus.ControllerSubscribed)" -ForegroundColor Gray
+    # Write-Host "  CoPilot already subscribed: $($Config.MarketplaceStatus.CopilotSubscribed)" -ForegroundColor Gray
+    # Write-Host "  accept_controller_subscription = $acceptControllerSubscription" -ForegroundColor Gray
+    # Write-Host "  accept_copilot_subscription = $acceptCopilotSubscription" -ForegroundColor Gray
     
     # Create main.tf
     $mainTf = @"
