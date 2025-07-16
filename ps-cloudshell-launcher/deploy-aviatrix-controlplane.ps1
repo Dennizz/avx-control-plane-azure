@@ -213,19 +213,19 @@ function Write-Banner {
 function Write-Section {
     param([string]$Message, [string]$Color = "White")
     Write-Host ""
-    Write-Host "┌─ $Message" -ForegroundColor $Color
-    Write-Host "│" -ForegroundColor $Color
+    Write-Host "  ┌─ $Message" -ForegroundColor $Color
+    Write-Host "  │" -ForegroundColor $Color
 }
 
 function Write-SectionEnd {
     param([string]$Color = "White")
-    Write-Host "└─" -ForegroundColor $Color
+    Write-Host "  └─" -ForegroundColor $Color
     Write-Host ""
 }
 
 function Write-Step {
     param([string]$Message)
-    Write-Host "  ▶   $Message" -ForegroundColor Yellow
+    Write-Host "   ▶  $Message" -ForegroundColor Yellow
 }
 
 function Write-Success {
