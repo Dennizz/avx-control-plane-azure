@@ -229,7 +229,7 @@ function Write-Error {
 }
 
 function Write-Info {
-    param([string]$Message")
+    param([string]$Message)
     Write-Host "$Message" -ForegroundColor Cyan
 }
 
