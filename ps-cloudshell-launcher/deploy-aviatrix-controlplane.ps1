@@ -182,18 +182,26 @@ function Write-Banner {
     param([string]$Message, [string]$Color = "Cyan")
     Write-Host ""
     
-    # Create the border lines
-    $topBorder = "╔" + ("═" * 74) + "╗"
-    $bottomBorder = "╚" + ("═" * 74) + "╝"
+    # Use a simpler approach with fixed width
+    $totalWidth = 76
+    $borderChars = $totalWidth - 2  # Account for corner characters
     
-    # Calculate proper spacing for centering
-    # Border total width is 76 (74 + 2 corners), so content line should also be 76 total
-    # Content width is 74 to account for the 2 border characters (║ on each side)
-    $contentWidth = 74
-    $leftSpaces = [math]::Floor(($contentWidth - $Message.Length) / 2)
-    $rightSpaces = $contentWidth - $Message.Length - $leftSpaces
+    $topBorder = "╔" + ("═" * $borderChars) + "╗"
+    $bottomBorder = "╚" + ("═" * $borderChars) + "╝"
     
-    # Create the content line
+    # Content area is total width minus the 2 side border characters
+    $contentAreaWidth = $totalWidth - 2
+    $messageLength = $Message.Length
+    
+    if ($messageLength -gt $contentAreaWidth) {
+        # Message too long, truncate it
+        $Message = $Message.Substring(0, $contentAreaWidth - 3) + "..."
+        $messageLength = $contentAreaWidth
+    }
+    
+    $leftSpaces = [math]::Floor(($contentAreaWidth - $messageLength) / 2)
+    $rightSpaces = $contentAreaWidth - $messageLength - $leftSpaces
+    
     $contentLine = "║" + (" " * $leftSpaces) + $Message + (" " * $rightSpaces) + "║"
     
     Write-Host $topBorder -ForegroundColor $Color
