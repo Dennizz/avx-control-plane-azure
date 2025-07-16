@@ -1219,8 +1219,8 @@ function Invoke-TerraformDeployment {
                 Write-Host "  │  ├─ IP:  " -NoNewline -ForegroundColor Gray
                 Write-Host "  $($summary.controller_public_ip)" -ForegroundColor Yellow
                 Write-Host "  │  └─ Username: " -NoNewline -ForegroundColor Gray
-                Write-Host "  admin" -ForegroundColor Green
-                Write-Host "  │" -ForegroundColor Cyan
+                Write-Host "  admin" -ForegroundColor White
+                Write-Host "  │" -ForegroundColor White
                 
                 if ($summary.copilot_url -and $summary.copilot_url -ne "Not deployed") {
                     Write-Host "  ├─ CoPilot Analytics Interface" -ForegroundColor White
@@ -1250,7 +1250,7 @@ function Invoke-TerraformDeployment {
                 $info = $_.connection_info.value
                 
                 Write-Host "  ╭─ Quick Start Guide" -ForegroundColor Magenta
-                Write-Host "  │" -ForegroundColor Magenta
+                Write-Host "  │" -ForegroundColor White
                 $stepNumber = 1
                 foreach ($step in $info.next_steps) {
                     $cleanStep = $step -replace "^\d+\.\s*", ""
@@ -1309,21 +1309,21 @@ function Show-PostDeploymentInfo {
     Write-Host ""
     
     Write-Host "  ╭─ Learning Resources" -ForegroundColor Blue
-    Write-Host "  │" -ForegroundColor Blue
+    Write-Host "  │" -ForegroundColor White
     Write-Host "  ├─ Official Documentation" -ForegroundColor White
-    Write-Host "  │  └─ " -NoNewline -ForegroundColor Blue
+    Write-Host "  │  └─ " -NoNewline -ForegroundColor White
     Write-Host "  https://docs.aviatrix.com" -ForegroundColor Cyan
-    Write-Host "  │" -ForegroundColor Blue
+    Write-Host "  │" -ForegroundColor White
     Write-Host "  ├─ Getting Started Guide" -ForegroundColor White
-    Write-Host "  │  └─ " -NoNewline -ForegroundColor Blue
+    Write-Host "  │  └─ " -NoNewline -ForegroundColor White
     Write-Host "  https://docs.aviatrix.com/StartUpGuides/" -ForegroundColor Cyan
-    Write-Host "  │" -ForegroundColor Blue
+    Write-Host "  │" -ForegroundColor White
     Write-Host "  ├─ Video Tutorials & Webinars" -ForegroundColor White
-    Write-Host "  │  └─ " -NoNewline -ForegroundColor Blue
+    Write-Host "  │  └─ " -NoNewline -ForegroundColor White
     Write-Host "  https://aviatrix.com/learn/" -ForegroundColor Cyan
-    Write-Host "  │" -ForegroundColor Blue
+    Write-Host "  │" -ForegroundColor White
     Write-Host "  └─ Support Portal" -ForegroundColor White
-    Write-Host "     └─ " -NoNewline -ForegroundColor Blue
+    Write-Host "     └─ " -NoNewline -ForegroundColor White
     Write-Host "  https://support.aviatrix.com" -ForegroundColor Cyan
     Write-Host ""
     
