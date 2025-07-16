@@ -225,7 +225,7 @@ function Write-SectionEnd {
 
 function Write-Step {
     param([string]$Message)
-    Write-Host "   ▶  $Message" -ForegroundColor Yellow
+    Write-Host "  ▶   $Message" -ForegroundColor Yellow
 }
 
 function Write-Success {
