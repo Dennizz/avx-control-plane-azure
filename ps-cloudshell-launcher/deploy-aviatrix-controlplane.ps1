@@ -181,16 +181,17 @@ $AvailableLocations = @(
 function Write-Banner {
     param([string]$Message, [string]$Color = "Cyan")
     Write-Host ""
-    Write-Host "╔" + ("═" * 78) + "╗" -ForegroundColor $Color
+    Write-Host "╔" + ("═" * 74) + "╗" -ForegroundColor $Color
     
     # Calculate proper spacing for centering
-    # Total width is 78, but we need to account for the 2 border characters (║ on each side)
-    $contentWidth = 76
+    # Border total width is 76 (74 + 2 corners), so content line should also be 76 total
+    # Content width is 74 to account for the 2 border characters (║ on each side)
+    $contentWidth = 74
     $leftSpaces = [math]::Floor(($contentWidth - $Message.Length) / 2)
     $rightSpaces = $contentWidth - $Message.Length - $leftSpaces
     
     Write-Host "║" + (" " * $leftSpaces) + $Message + (" " * $rightSpaces) + "║" -ForegroundColor $Color
-    Write-Host "╚" + ("═" * 78) + "╝" -ForegroundColor $Color
+    Write-Host "╚" + ("═" * 74) + "╝" -ForegroundColor $Color
     Write-Host ""
 }
 
@@ -228,8 +229,8 @@ function Write-Error {
 }
 
 function Write-Info {
-    param([string]$Message, [string]$Icon = "INFO:")
-    Write-Host "$Icon $Message" -ForegroundColor Cyan
+    param([string]$Message")
+    Write-Host "$Message" -ForegroundColor Cyan
 }
 
 function Write-Hint {
@@ -1413,8 +1414,8 @@ try {
             terraform destroy -auto-approve
             if ($LASTEXITCODE -ne 0) { throw "Terraform destroy failed" }
             
-            Write-Success "Destruction Complete" "Green"
-            Write-Success "All Aviatrix resources have been successfully destroyed"
+            Write-Host "Destruction Complete" "Green"
+            Write-Host "All Aviatrix resources have been successfully destroyed"
             Write-Info "Terraform state and configuration files remain in: $TerraformDir"
             Write-Info "You can safely delete this directory if you don't plan to redeploy"
             
