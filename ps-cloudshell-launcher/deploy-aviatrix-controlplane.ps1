@@ -291,15 +291,15 @@ function Get-UserInput {
         
         # Show help text if provided
         if ($HelpText) {
-            Write-Host "│  " -NoNewline -ForegroundColor Cyan
-            Write-Host "Help: " -NoNewline -ForegroundColor DarkGray
-            Write-Host "$HelpText" -ForegroundColor Gray
+            Write-Host "  │  " -NoNewline -ForegroundColor Cyan
+            Write-Host "  Help: " -NoNewline -ForegroundColor DarkGray
+            Write-Host "  $HelpText" -ForegroundColor Gray
         }
         
         # Show valid options in a more accessible format
         if ($ValidValues.Count -gt 0) {
-            Write-Host "│  " -NoNewline -ForegroundColor Cyan
-            Write-Host "Valid options: " -NoNewline -ForegroundColor DarkGray
+            Write-Host "  │  " -NoNewline -ForegroundColor Cyan
+            Write-Host "  Valid options: " -NoNewline -ForegroundColor DarkGray
             
             # Group options for better readability
             if ($ValidValues.Count -le 6) {
@@ -318,9 +318,9 @@ function Get-UserInput {
         
         # Show default value if available
         if ($DefaultValue -and -not $IsPassword) {
-            Write-Host "│  " -NoNewline -ForegroundColor Cyan
-            Write-Host "Default: " -NoNewline -ForegroundColor DarkGray
-            Write-Host "$DefaultValue" -ForegroundColor Green
+            Write-Host "  │  " -NoNewline -ForegroundColor Cyan
+            Write-Host "  Default: " -NoNewline -ForegroundColor DarkGray
+            Write-Host "  $DefaultValue" -ForegroundColor Green
         }
         
         # Create the input prompt
@@ -330,12 +330,12 @@ function Get-UserInput {
             $displayPrompt = "Enter value"
         }
         
-        Write-Host "│" -ForegroundColor Cyan
-        Write-Host "└─ " -NoNewline -ForegroundColor Cyan
+        Write-Host "  │" -ForegroundColor Cyan
+        Write-Host "  └─ " -NoNewline -ForegroundColor Cyan
         
         # Handle password input with better visual feedback
         if ($IsPassword) {
-            Write-Host "$displayPrompt (input will be hidden): " -NoNewline -ForegroundColor White
+            Write-Host "  $displayPrompt (input will be hidden): " -NoNewline -ForegroundColor White
             $secureInput = Read-Host -AsSecureString
             # Convert SecureString to plain text - more reliable method
             $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureInput)
@@ -345,15 +345,15 @@ function Get-UserInput {
                 [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
             }
         } else {
-            Write-Host "${displayPrompt}: " -NoNewline -ForegroundColor White
+            Write-Host "  ${displayPrompt}: " -NoNewline -ForegroundColor White
             $input = Read-Host
         }
         
         # Handle default values
         if (-not $input -and $DefaultValue) {
             $input = $DefaultValue
-            Write-Host "   Using default value: " -NoNewline -ForegroundColor DarkGray
-            Write-Host "$DefaultValue" -ForegroundColor Green
+            Write-Host "     Using default value: " -NoNewline -ForegroundColor DarkGray
+            Write-Host "  $DefaultValue" -ForegroundColor Green
         }
         
         # Validation with clear error messages
@@ -377,21 +377,21 @@ function Get-UserInput {
         
         if (-not $isValid) {
             Write-Host ""
-            Write-Host "╭─ " -NoNewline -ForegroundColor Red
-            Write-Host "Input Error" -ForegroundColor Red
-            Write-Host "│  " -NoNewline -ForegroundColor Red
-            Write-Host "$errorMessage" -ForegroundColor Yellow
-            Write-Host "╰─ Please try again" -ForegroundColor Red
+            Write-Host "  ╭─ " -NoNewline -ForegroundColor Red
+            Write-Host "  Input Error" -ForegroundColor Red
+            Write-Host "  │  " -NoNewline -ForegroundColor Red
+            Write-Host "  $errorMessage" -ForegroundColor Yellow
+            Write-Host "  ╰─ Please try again" -ForegroundColor Red
             Write-Host ""
         } else {
             # Show confirmation for non-password inputs
             if (-not $IsPassword) {
-                Write-Host "   ✓ " -NoNewline -ForegroundColor Green
-                Write-Host "Accepted: " -NoNewline -ForegroundColor DarkGray
-                Write-Host "$input" -ForegroundColor White
+                Write-Host "     ✓ " -NoNewline -ForegroundColor Green
+                Write-Host "  Accepted: " -NoNewline -ForegroundColor DarkGray
+                Write-Host "  $input" -ForegroundColor White
             } else {
-                Write-Host "   ✓ " -NoNewline -ForegroundColor Green
-                Write-Host "Password accepted" -ForegroundColor White
+                Write-Host "     ✓ " -NoNewline -ForegroundColor Green
+                Write-Host "  Password accepted" -ForegroundColor White
             }
         }
         
