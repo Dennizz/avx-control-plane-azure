@@ -1366,7 +1366,7 @@ try {
     Write-Host "  Secure: Follows security best practices and least privilege" -ForegroundColor White
     Write-Host ""
     
-    Write-Info "  This wizard will guide you through each step of the deployment process."
+    Write-Info "This wizard will guide you through each step of the deployment process."
     Write-Hint "  You can press Ctrl+C at any time to cancel the deployment safely."
     Write-Host ""
     
