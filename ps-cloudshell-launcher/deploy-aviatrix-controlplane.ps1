@@ -225,12 +225,12 @@ function Write-SectionEnd {
 
 function Write-Step {
     param([string]$Message)
-    Write-Host "▶ $Message" -ForegroundColor Yellow
+    Write-Host "▶  $Message" -ForegroundColor Yellow
 }
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "✅ $Message" -ForegroundColor Green
+    Write-Host "✅  $Message" -ForegroundColor Green
 }
 
 function Write-Warning {
@@ -240,7 +240,7 @@ function Write-Warning {
 
 function Write-Error {
     param([string]$Message)
-    Write-Host "❌ $Message" -ForegroundColor Red
+    Write-Host "❌  $Message" -ForegroundColor Red
 }
 
 function Write-Info {
