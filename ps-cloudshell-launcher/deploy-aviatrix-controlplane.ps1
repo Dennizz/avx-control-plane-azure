@@ -184,9 +184,10 @@ function Write-Banner {
     Write-Host "╔" + ("═" * 78) + "╗" -ForegroundColor $Color
     
     # Calculate proper spacing for centering
-    $totalWidth = 78
-    $leftSpaces = [math]::Floor(($totalWidth - $Message.Length) / 2)
-    $rightSpaces = $totalWidth - $Message.Length - $leftSpaces
+    # Total width is 78, but we need to account for the 2 border characters (║ on each side)
+    $contentWidth = 76
+    $leftSpaces = [math]::Floor(($contentWidth - $Message.Length) / 2)
+    $rightSpaces = $contentWidth - $Message.Length - $leftSpaces
     
     Write-Host "║" + (" " * $leftSpaces) + $Message + (" " * $rightSpaces) + "║" -ForegroundColor $Color
     Write-Host "╚" + ("═" * 78) + "╝" -ForegroundColor $Color
@@ -227,13 +228,13 @@ function Write-Error {
 }
 
 function Write-Info {
-    param([string]$Message, [string]$Icon = "ℹ️")
+    param([string]$Message, [string]$Icon = "INFO:")
     Write-Host "$Icon $Message" -ForegroundColor Cyan
 }
 
 function Write-Hint {
     param([string]$Message)
-    Write-Host "💡 Tip: $Message" -ForegroundColor DarkCyan
+    Write-Host "TIP: $Message" -ForegroundColor DarkCyan
 }
 
 function Write-InputPrompt {
@@ -449,7 +450,7 @@ function Test-Prerequisites {
             if ($hasAppRegPermission) {
                 Write-Success "Azure AD app registration permissions verified"
             } else {
-                Write-Error "❌ Insufficient Azure AD permissions for app registration"
+                Write-Error "Insufficient Azure AD permissions for app registration"
                 Write-Host ""
                 Write-Host "This deployment requires permissions to create Azure AD applications and service principals." -ForegroundColor Yellow
                 Write-Host "You may need to:" -ForegroundColor Yellow
@@ -535,15 +536,15 @@ function Test-MarketplaceSubscriptions {
             $controllerAgreement = az vm image terms show --publisher $($subscriptionStatus.PublisherId) --offer $($subscriptionStatus.ControllerOfferId) --plan "aviatrix-controller-g4" 2>$null | ConvertFrom-Json
             if ($controllerAgreement -and $controllerAgreement.accepted -eq $true) {
                 $subscriptionStatus.ControllerSubscribed = $true
-                Write-Success "✓ Aviatrix Controller marketplace agreement already accepted"
+                Write-Success "Aviatrix Controller marketplace agreement already accepted"
             } else {
-                Write-Warning "⚠ Aviatrix Controller marketplace agreement not yet accepted"
-                Write-Info "  The deployment will automatically accept the marketplace terms during installation"
+                Write-Warning "Aviatrix Controller marketplace agreement not yet accepted"
+                Write-Info "The deployment will automatically accept the marketplace terms during installation"
             }
         } catch {
-            Write-Warning "⚠ Could not verify Aviatrix Controller marketplace agreement status"
-            Write-Info "  This may be due to permissions or the agreement may not exist yet"
-            Write-Info "  The deployment will attempt to accept marketplace terms if needed"
+            Write-Warning "Could not verify Aviatrix Controller marketplace agreement status"
+            Write-Info "This may be due to permissions or the agreement may not exist yet"
+            Write-Info "The deployment will attempt to accept marketplace terms if needed"
         }
         
         # Check Aviatrix CoPilot marketplace subscription (only if CoPilot is included)
@@ -553,15 +554,15 @@ function Test-MarketplaceSubscriptions {
                 $copilotAgreement = az vm image terms show --publisher $($subscriptionStatus.PublisherId) --offer $($subscriptionStatus.CopilotOfferId) --plan "avx-cplt-byol-02" 2>$null | ConvertFrom-Json
                 if ($copilotAgreement -and $copilotAgreement.accepted -eq $true) {
                     $subscriptionStatus.CopilotSubscribed = $true
-                    Write-Success "✓ Aviatrix CoPilot marketplace agreement already accepted"
+                    Write-Success "Aviatrix CoPilot marketplace agreement already accepted"
                 } else {
-                    Write-Warning "⚠ Aviatrix CoPilot marketplace agreement not yet accepted"
-                    Write-Info "  The deployment will automatically accept the marketplace terms during installation"
+                    Write-Warning "Aviatrix CoPilot marketplace agreement not yet accepted"
+                    Write-Info "The deployment will automatically accept the marketplace terms during installation"
                 }
             } catch {
-                Write-Warning "⚠ Could not verify Aviatrix CoPilot marketplace agreement status"
-                Write-Info "  This may be due to permissions or the agreement may not exist yet"
-                Write-Info "  The deployment will attempt to accept marketplace terms if needed"
+                Write-Warning "Could not verify Aviatrix CoPilot marketplace agreement status"
+                Write-Info "This may be due to permissions or the agreement may not exist yet"
+                Write-Info "The deployment will attempt to accept marketplace terms if needed"
             }
         } else {
             Write-Host "│  ├─ Skipping CoPilot marketplace check (CoPilot not included in deployment)" -ForegroundColor Gray
@@ -569,8 +570,8 @@ function Test-MarketplaceSubscriptions {
         
     } catch {
         Write-Warning "Could not check marketplace subscriptions automatically"
-        Write-Host "  Error: $($_.Exception.Message)" -ForegroundColor Gray
-        Write-Host "  The deployment will proceed and attempt to accept marketplace terms if needed" -ForegroundColor Gray
+        Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Gray
+        Write-Host "The deployment will proceed and attempt to accept marketplace terms if needed" -ForegroundColor Gray
     }
     
     # Display summary
@@ -608,7 +609,7 @@ function Get-PublicIP {
         $ip = Invoke-RestMethod -Uri "https://ipinfo.io/ip" -TimeoutSec 10
         $ip = $ip.Trim()
         Write-Success "Successfully detected public IP: $ip"
-        Write-Hint "Only this IP address will be allowed to access the Aviatrix Controller web interface."
+        Write-Hint "This IP address will be allowed to access the Aviatrix Controller web interface."
         return $ip
     } catch {
         Write-Warning "Could not auto-detect your public IP address"
@@ -747,8 +748,8 @@ function Get-DeploymentParameters {
             "🇨🇦 Canada" = @("Canada Central", "Canada East")
             "🇧🇷 South America" = @("Brazil South")
             "🇪🇺 Europe" = @("North Europe", "West Europe", "UK South", "UK West", "France Central", "Germany West Central", "Switzerland North", "Norway East", "Sweden Central")
-            "🌏 Asia Pacific" = @("Australia East", "Australia Southeast", "Japan East", "Japan West", "Korea Central", "Southeast Asia", "East Asia", "India Central")
-            "🌍 Middle East & Africa" = @("UAE North", "South Africa North")
+            "Asia Pacific" = @("Australia East", "Australia Southeast", "Japan East", "Japan West", "Korea Central", "Southeast Asia", "East Asia", "India Central")
+            "Middle East & Africa" = @("UAE North", "South Africa North")
         }
         
         foreach ($group in $regionGroups.GetEnumerator()) {
@@ -1116,30 +1117,30 @@ function Invoke-TerraformDeployment {
             
             Write-Host "╭─ Deployment Overview" -ForegroundColor Yellow
             Write-Host "│" -ForegroundColor Yellow
-            Write-Host "├─ 🖥️  Aviatrix Controller VM in " -NoNewline -ForegroundColor White
+            Write-Host "├─ Aviatrix Controller VM in " -NoNewline -ForegroundColor White
             Write-Host "$($Config.Location)" -ForegroundColor Cyan
-            Write-Host "├─ 🔒 Azure AD App Registration for API access" -ForegroundColor White
-            Write-Host "├─ ⚙️  Controller initialization and account onboarding" -ForegroundColor White
+            Write-Host "├─ Azure AD App Registration for API access" -ForegroundColor White
+            Write-Host "├─ Controller initialization and account onboarding" -ForegroundColor White
             if ($Config.IncludeCopilot) {
-                Write-Host "├─ 📊 Aviatrix CoPilot VM for analytics" -ForegroundColor White
+                Write-Host "├─ Aviatrix CoPilot VM for analytics" -ForegroundColor White
             }
-            Write-Host "├─ 🛡️  Network security groups (access from " -NoNewline -ForegroundColor White
+            Write-Host "├─ Network security groups (access from " -NoNewline -ForegroundColor White
             Write-Host "$($Config.UserPublicIP)" -NoNewline -ForegroundColor Cyan
             Write-Host ")" -ForegroundColor White
-            Write-Host "└─ 🌐 Azure marketplace agreements" -ForegroundColor White
+            Write-Host "└─ Azure marketplace agreements" -ForegroundColor White
             Write-Host ""
             
             Write-Host "╭─ Important Notes" -ForegroundColor Magenta
             Write-Host "│" -ForegroundColor Magenta
-            Write-Host "├─ ⏱️  Estimated time: " -NoNewline -ForegroundColor White
+            Write-Host "├─ Estimated time: " -NoNewline -ForegroundColor White
             if ($Config.IncludeCopilot) {
                 Write-Host "15-20 minutes" -ForegroundColor Yellow
             } else {
                 Write-Host "10-15 minutes" -ForegroundColor Yellow
             }
-            Write-Host "├─ 💰 This will create billable Azure resources" -ForegroundColor White
-            Write-Host "├─ 🔒 Controller will only be accessible from your IP" -ForegroundColor White
-            Write-Host "└─ ❌ Press Ctrl+C to cancel" -ForegroundColor White
+            Write-Host "├─ This will create billable Azure resources" -ForegroundColor White
+            Write-Host "├─ Controller will only be accessible from your IP" -ForegroundColor White
+            Write-Host "└─ Press Ctrl+C to cancel" -ForegroundColor White
             Write-Host ""
             
             Write-Host "┌─ " -NoNewline -ForegroundColor Cyan
@@ -1156,7 +1157,7 @@ function Invoke-TerraformDeployment {
             }
         }
         
-        Write-Banner "🚀 Starting Aviatrix Control Plane Deployment" "Green"
+        Write-Banner "Starting Aviatrix Control Plane Deployment" "Green"
         Write-Info "Sit back and relax - this will take approximately 10-15 minutes..."
         Write-Host ""
         
@@ -1177,15 +1178,15 @@ function Invoke-TerraformDeployment {
         
         $duration = $endTime - $startTime
         Write-Host ""
-        Write-Banner "🎉 Deployment Completed Successfully!" "Green"
+        Write-Banner "Deployment Completed Successfully!" "Green"
         
         Write-Host "╭─ Deployment Statistics" -ForegroundColor Green
         Write-Host "│" -ForegroundColor Green
-        Write-Host "├─ ⏱️  Total Time: " -NoNewline -ForegroundColor White
+        Write-Host "├─ Total Time: " -NoNewline -ForegroundColor White
         Write-Host "$($duration.Minutes) minutes $($duration.Seconds) seconds" -ForegroundColor Yellow
-        Write-Host "├─ 📍 Region: " -NoNewline -ForegroundColor White
+        Write-Host "├─ Region: " -NoNewline -ForegroundColor White
         Write-Host "$($Config.Location)" -ForegroundColor Yellow
-        Write-Host "└─ ✅ Status: " -NoNewline -ForegroundColor White
+        Write-Host "└─ Status: " -NoNewline -ForegroundColor White
         Write-Host "All resources deployed successfully" -ForegroundColor Green
         Write-Host ""
         
@@ -1196,7 +1197,7 @@ function Invoke-TerraformDeployment {
                 
                 Write-Host "╭─ Access Information" -ForegroundColor Cyan
                 Write-Host "│" -ForegroundColor Cyan
-                Write-Host "├─ 🌐 Controller Web Interface" -ForegroundColor White
+                Write-Host "├─ Controller Web Interface" -ForegroundColor White
                 Write-Host "│  ├─ URL: " -NoNewline -ForegroundColor Gray
                 Write-Host "$($summary.controller_url)" -ForegroundColor Yellow
                 Write-Host "│  ├─ IP:  " -NoNewline -ForegroundColor Gray
@@ -1206,7 +1207,7 @@ function Invoke-TerraformDeployment {
                 Write-Host "│" -ForegroundColor Cyan
                 
                 if ($summary.copilot_url -and $summary.copilot_url -ne "Not deployed") {
-                    Write-Host "├─ 📊 CoPilot Analytics Interface" -ForegroundColor White
+                    Write-Host "├─ CoPilot Analytics Interface" -ForegroundColor White
                     Write-Host "│  ├─ URL: " -NoNewline -ForegroundColor Gray
                     Write-Host "$($summary.copilot_url)" -ForegroundColor Yellow
                     Write-Host "│  └─ Integrated with Controller authentication" -ForegroundColor Gray
@@ -1214,7 +1215,7 @@ function Invoke-TerraformDeployment {
                 }
                 
                 # Build comprehensive security display
-                Write-Host "└─ 🔒 Security: Access restricted to " -ForegroundColor White
+                Write-Host "└─ Security: Access restricted to " -ForegroundColor White
                 Write-Host "   • " -NoNewline -ForegroundColor White
                 Write-Host "$($Config.UserPublicIP)" -NoNewline -ForegroundColor Yellow
                 Write-Host " (CloudShell)" -ForegroundColor Gray
@@ -1242,7 +1243,7 @@ function Invoke-TerraformDeployment {
                     $stepNumber++
                 }
                 Write-Host "│" -ForegroundColor Magenta
-                Write-Host "└─ 🎯 Your Aviatrix control plane is ready for multi-cloud networking!" -ForegroundColor White
+                Write-Host "└─ Your Aviatrix control plane is ready for multi-cloud networking!" -ForegroundColor White
                 Write-Host ""
             }
         }
@@ -1250,15 +1251,15 @@ function Invoke-TerraformDeployment {
         # Additional success messaging
         Write-Host "╭─ What's Next?" -ForegroundColor Yellow
         Write-Host "│" -ForegroundColor Yellow
-        Write-Host "├─ 🏗️  Start creating gateways in your preferred cloud regions" -ForegroundColor White
-        Write-Host "├─ 🔗 Connect your on-premises networks" -ForegroundColor White
-        Write-Host "├─ 📈 Monitor traffic through the dashboard" -ForegroundColor White
+        Write-Host "├─ Start creating gateways in your preferred cloud regions" -ForegroundColor White
+        Write-Host "├─ Connect your on-premises networks" -ForegroundColor White
+        Write-Host "├─ Monitor traffic through the dashboard" -ForegroundColor White
         if ($Config.IncludeCopilot) {
-            Write-Host "├─ 📊 Explore advanced analytics in CoPilot" -ForegroundColor White
+            Write-Host "├─ Explore advanced analytics in CoPilot" -ForegroundColor White
         } else {
-            Write-Host "├─ 💡 Consider adding CoPilot later for advanced analytics" -ForegroundColor White
+            Write-Host "├─ Consider adding CoPilot later for advanced analytics" -ForegroundColor White
         }
-        Write-Host "└─ 📚 Check out the documentation links below" -ForegroundColor White
+        Write-Host "└─ Check out the documentation links below" -ForegroundColor White
         Write-Host ""
         
     } finally {
@@ -1279,52 +1280,52 @@ function Show-PostDeploymentInfo {
     
     Write-Host "╭─ Security & Access" -ForegroundColor Red
     Write-Host "│" -ForegroundColor Red
-    Write-Host "├─ 🔒 Controller access is restricted to:" -ForegroundColor White
+    Write-Host "├─ Controller access is restricted to:" -ForegroundColor White
     foreach ($ip in $allAuthorizedIPs) {
         Write-Host "│  • " -NoNewline -ForegroundColor White
         Write-Host "$ip" -ForegroundColor Yellow
     }
-    Write-Host "├─ 🔑 Default username: " -NoNewline -ForegroundColor White
+    Write-Host "├─ Default username: " -NoNewline -ForegroundColor White
     Write-Host "admin" -ForegroundColor Green
-    Write-Host "├─ 🛡️  Consider changing the admin password after first login" -ForegroundColor White
-    Write-Host "├─ 👥 Set up additional admin users for your team" -ForegroundColor White
-    Write-Host "└─ 🔐 Enable multi-factor authentication for enhanced security" -ForegroundColor White
+    Write-Host "├─ Consider changing the admin password after first login" -ForegroundColor White
+    Write-Host "├─ Set up additional admin users for your team" -ForegroundColor White
+    Write-Host "└─ Enable multi-factor authentication for enhanced security" -ForegroundColor White
     Write-Host ""
     
     Write-Host "╭─ Learning Resources" -ForegroundColor Blue
     Write-Host "│" -ForegroundColor Blue
-    Write-Host "├─ 📖 Official Documentation" -ForegroundColor White
+    Write-Host "├─ Official Documentation" -ForegroundColor White
     Write-Host "│  └─ " -NoNewline -ForegroundColor Blue
     Write-Host "https://docs.aviatrix.com" -ForegroundColor Cyan
     Write-Host "│" -ForegroundColor Blue
-    Write-Host "├─ 🚀 Getting Started Guide" -ForegroundColor White
+    Write-Host "├─ Getting Started Guide" -ForegroundColor White
     Write-Host "│  └─ " -NoNewline -ForegroundColor Blue
     Write-Host "https://docs.aviatrix.com/StartUpGuides/" -ForegroundColor Cyan
     Write-Host "│" -ForegroundColor Blue
-    Write-Host "├─ 🎥 Video Tutorials & Webinars" -ForegroundColor White
+    Write-Host "├─ Video Tutorials & Webinars" -ForegroundColor White
     Write-Host "│  └─ " -NoNewline -ForegroundColor Blue
     Write-Host "https://aviatrix.com/learn/" -ForegroundColor Cyan
     Write-Host "│" -ForegroundColor Blue
-    Write-Host "└─ 🆘 Support Portal" -ForegroundColor White
+    Write-Host "└─ Support Portal" -ForegroundColor White
     Write-Host "   └─ " -NoNewline -ForegroundColor Blue
     Write-Host "https://support.aviatrix.com" -ForegroundColor Cyan
     Write-Host ""
     
     Write-Host "╭─ Managing This Deployment" -ForegroundColor Green
     Write-Host "│" -ForegroundColor Green
-    Write-Host "├─ 📁 Terraform files location: " -NoNewline -ForegroundColor White
+    Write-Host "├─ Terraform files location: " -NoNewline -ForegroundColor White
     Write-Host "$TerraformDir" -ForegroundColor Yellow
-    Write-Host "├─ 🔧 To modify the deployment:" -ForegroundColor White
+    Write-Host "├─ To modify the deployment:" -ForegroundColor White
     Write-Host "│  ├─ Edit " -NoNewline -ForegroundColor Gray
     Write-Host "main.tf" -NoNewline -ForegroundColor Yellow
     Write-Host " in the terraform directory" -ForegroundColor Gray
     Write-Host "│  └─ Run " -NoNewline -ForegroundColor Gray
     Write-Host "terraform apply" -NoNewline -ForegroundColor Yellow
     Write-Host " to apply changes" -ForegroundColor Gray
-    Write-Host "├─ 🗑️  To destroy the deployment:" -ForegroundColor White
+    Write-Host "├─ To destroy the deployment:" -ForegroundColor White
     Write-Host "│  └─ Run this script with " -NoNewline -ForegroundColor Gray
     Write-Host "-TerraformAction destroy" -ForegroundColor Yellow
-    Write-Host "└─ 💾 Keep the terraform directory for future management" -ForegroundColor White
+    Write-Host "└─ Keep the terraform directory for future management" -ForegroundColor White
     Write-Host ""
     
     Write-Host "╭─ Next Steps Recommendations" -ForegroundColor Yellow
@@ -1339,14 +1340,14 @@ function Show-PostDeploymentInfo {
 
 # Main execution
 try {
-    Write-Banner "🌩️ Aviatrix Control Plane Deployment Wizard" "Cyan"
+    Write-Banner "Aviatrix Control Plane Deployment Wizard" "Cyan"
     
     Write-Host "╭─ Welcome to the Aviatrix Azure Deployment Wizard!" -ForegroundColor Cyan
     Write-Host "│" -ForegroundColor Cyan
-    Write-Host "├─ 🎯 Purpose: Deploy a complete Aviatrix control plane in Azure" -ForegroundColor White
-    Write-Host "├─ 📦 Includes: Controller, initialization, and Azure account onboarding" -ForegroundColor White
-    Write-Host "├─ ⚡ Optimized: For Azure Cloud Shell with user-friendly prompts" -ForegroundColor White
-    Write-Host "└─ 🔒 Secure: Follows security best practices and least privilege" -ForegroundColor White
+    Write-Host "├─ Purpose: Deploy a complete Aviatrix control plane in Azure" -ForegroundColor White
+    Write-Host "├─ Includes: Controller, initialization, and Azure account onboarding" -ForegroundColor White
+    Write-Host "├─ Optimized: For Azure Cloud Shell with user-friendly prompts" -ForegroundColor White
+    Write-Host "└─ Secure: Follows security best practices and least privilege" -ForegroundColor White
     Write-Host ""
     
     Write-Info "This wizard will guide you through each step of the deployment process."
@@ -1358,7 +1359,7 @@ try {
     
     # Handle destroy operations differently - skip configuration gathering
     if ($TerraformAction -eq "destroy") {
-        Write-Banner "🗑️ Destroying Aviatrix Deployment" "Red"
+        Write-Banner "Destroying Aviatrix Deployment" "Red"
         
         # Check if terraform directory exists
         if (-not (Test-Path $TerraformDir)) {
@@ -1372,7 +1373,7 @@ try {
         
         if (-not $SkipConfirmation) {
             Write-Host ""
-            Write-Host "⚠️  WARNING: This will permanently delete all Aviatrix resources!" -ForegroundColor Red
+            Write-Warning "This will permanently delete all Aviatrix resources!" -ForegroundColor Red
             Write-Host "This includes:" -ForegroundColor Yellow
             Write-Host "├─ Aviatrix Controller VM and associated resources" -ForegroundColor Gray
             Write-Host "├─ CoPilot VM (if deployed)" -ForegroundColor Gray
@@ -1400,7 +1401,7 @@ try {
         }
         
         # Execute terraform destroy directly
-        Write-Banner "🔥 Executing Terraform Destroy" "Red"
+        Write-Banner "Executing Terraform Destroy" "Red"
         
         Push-Location $TerraformDir
         try {
@@ -1412,13 +1413,13 @@ try {
             terraform destroy -auto-approve
             if ($LASTEXITCODE -ne 0) { throw "Terraform destroy failed" }
             
-            Write-Banner "✅ Destruction Complete" "Green"
+            Write-Success "Destruction Complete" "Green"
             Write-Success "All Aviatrix resources have been successfully destroyed"
             Write-Info "Terraform state and configuration files remain in: $TerraformDir"
             Write-Info "You can safely delete this directory if you don't plan to redeploy"
             
         } catch {
-            Write-Banner "❌ Destruction Failed" "Red"
+            Write-Error "Destruction Failed" "Red"
             Write-Error "Failed to destroy resources: $($_.Exception.Message)"
             Write-Info "Some resources may still exist. Check the Azure portal and clean up manually if needed."
             exit 1
@@ -1514,22 +1515,22 @@ try {
         # Show what will be deployed
         Write-Host "╭─ Resources to be Deployed" -ForegroundColor Magenta
         Write-Host "│" -ForegroundColor Magenta
-        Write-Host "├─ 🖥️  Aviatrix Controller VM" -ForegroundColor White
-        Write-Host "├─ 🔒 Azure AD App Registration" -ForegroundColor White
-        Write-Host "├─ 🌐 Virtual Network & Security Groups" -ForegroundColor White
-        Write-Host "├─ ⚙️  Controller Initialization" -ForegroundColor White
-        Write-Host "├─ 🔗 Azure Account Onboarding" -ForegroundColor White
+        Write-Host "├─ Aviatrix Controller VM" -ForegroundColor White
+        Write-Host "├─ Azure AD App Registration" -ForegroundColor White
+        Write-Host "├─ Virtual Network & Security Groups" -ForegroundColor White
+        Write-Host "├─ Controller Initialization" -ForegroundColor White
+        Write-Host "├─ Azure Account Onboarding" -ForegroundColor White
         if (-not $config.MarketplaceStatus.ControllerSubscribed) {
-            Write-Host "├─ 📝 Controller Marketplace Agreement" -ForegroundColor Yellow
+            Write-Host "├─ Controller Marketplace Agreement" -ForegroundColor Yellow
         }
         if ($config.IncludeCopilot) {
-            Write-Host "├─ 📊 CoPilot Analytics VM" -ForegroundColor White
+            Write-Host "├─ CoPilot Analytics VM" -ForegroundColor White
             if (-not $config.MarketplaceStatus.CopilotSubscribed) {
-                Write-Host "├─ 📝 CoPilot Marketplace Agreement" -ForegroundColor Yellow
+                Write-Host "├─ CoPilot Marketplace Agreement" -ForegroundColor Yellow
             }
-            Write-Host "└─ 🔧 CoPilot Configuration" -ForegroundColor White
+            Write-Host "└─ CoPilot Configuration" -ForegroundColor White
         } else {
-            Write-Host "└─ ⏭️  CoPilot (Available for future deployment)" -ForegroundColor Gray
+            Write-Host "└─ CoPilot (Available for future deployment)" -ForegroundColor Gray
         }
         
         Write-Host ""
@@ -1545,7 +1546,7 @@ try {
     
     # Execute Terraform or just validate in test mode
     if ($TestMode) {
-        Write-Banner "🧪 Test Mode - Validation Complete" "Green"
+        Write-Banner "Test Mode - Validation Complete" "Green"
         
         Write-Host "╭─ Validation Results" -ForegroundColor Green
         Write-Host "│" -ForegroundColor Green
@@ -1557,19 +1558,19 @@ try {
         
         Write-Host "╭─ Generated Files" -ForegroundColor Cyan
         Write-Host "│" -ForegroundColor Cyan
-        Write-Host "├─ 📁 Location: " -NoNewline -ForegroundColor White
+        Write-Host "├─ Location: " -NoNewline -ForegroundColor White
         Write-Host "$TerraformDir" -ForegroundColor Yellow
-        Write-Host "├─ 📄 main.tf - Main Terraform configuration" -ForegroundColor White
-        Write-Host "└─ 📄 outputs.tf - Output definitions" -ForegroundColor White
+        Write-Host "├─ main.tf - Main Terraform configuration" -ForegroundColor White
+        Write-Host "└─ outputs.tf - Output definitions" -ForegroundColor White
         Write-Host ""
         
         Write-Host "╭─ Next Steps" -ForegroundColor Yellow
         Write-Host "│" -ForegroundColor Yellow
-        Write-Host "├─ 🚀 To deploy for real:" -ForegroundColor White
+        Write-Host "├─ To deploy for real:" -ForegroundColor White
         Write-Host "│  └─ Run this script again without " -NoNewline -ForegroundColor Gray
         Write-Host "-TestMode" -ForegroundColor Yellow
         Write-Host "│" -ForegroundColor Yellow
-        Write-Host "├─ 🔧 Alternative deployment method:" -ForegroundColor White
+        Write-Host "├─ Alternative deployment method:" -ForegroundColor White
         Write-Host "│  ├─ Navigate to: " -NoNewline -ForegroundColor Gray
         Write-Host "$TerraformDir" -ForegroundColor Yellow
         Write-Host "│  ├─ Run: " -NoNewline -ForegroundColor Gray
@@ -1577,7 +1578,7 @@ try {
         Write-Host "│  └─ Run: " -NoNewline -ForegroundColor Gray
         Write-Host "terraform apply" -ForegroundColor Yellow
         Write-Host "│" -ForegroundColor Yellow
-        Write-Host "└─ 📋 Review the generated files to understand what will be deployed" -ForegroundColor White
+        Write-Host "└─ Review the generated files to understand what will be deployed" -ForegroundColor White
         Write-Host ""
     } else {
         Invoke-TerraformDeployment -Config $config
@@ -1596,31 +1597,31 @@ try {
     Write-Host "│" -ForegroundColor Red
     Write-Host "├─ ❌ Error Message: " -NoNewline -ForegroundColor White
     Write-Host "$($_.Exception.Message)" -ForegroundColor Yellow
-    Write-Host "├─ 📍 Error Location: " -NoNewline -ForegroundColor White
+    Write-Host "├─ Error Location: " -NoNewline -ForegroundColor White
     Write-Host "$($_.InvocationInfo.ScriptName):$($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Gray
-    Write-Host "└─ 🕐 Time: " -NoNewline -ForegroundColor White
+    Write-Host "└─ Time: " -NoNewline -ForegroundColor White
     Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Gray
     Write-Host ""
     
     Write-Host "╭─ Common Solutions" -ForegroundColor Yellow
     Write-Host "│" -ForegroundColor Yellow
-    Write-Host "├─ 🔑 Authentication Issues:" -ForegroundColor White
+    Write-Host "├─ Authentication Issues:" -ForegroundColor White
     Write-Host "│  ├─ Run " -NoNewline -ForegroundColor Gray
     Write-Host "az login" -NoNewline -ForegroundColor Yellow
     Write-Host " to refresh your authentication" -ForegroundColor Gray
     Write-Host "│  └─ Ensure you have sufficient Azure AD permissions" -ForegroundColor Gray
     Write-Host "│" -ForegroundColor Yellow
-    Write-Host "├─ 🏗️  Resource Issues:" -ForegroundColor White
+    Write-Host "├─ Resource Issues:" -ForegroundColor White
     Write-Host "│  ├─ Check Azure subscription permissions" -ForegroundColor Gray
     Write-Host "│  ├─ Verify resource quotas in selected region" -ForegroundColor Gray
     Write-Host "│  └─ Ensure deployment name is unique" -ForegroundColor Gray
     Write-Host "│" -ForegroundColor Yellow
-    Write-Host "├─ 📋 Input Validation:" -ForegroundColor White
+    Write-Host "├─ Input Validation:" -ForegroundColor White
     Write-Host "│  ├─ Verify all input parameters are correct" -ForegroundColor Gray
     Write-Host "│  ├─ Check Aviatrix customer license ID format" -ForegroundColor Gray
     Write-Host "│  └─ Ensure email address is valid" -ForegroundColor Gray
     Write-Host "│" -ForegroundColor Yellow
-    Write-Host "└─ 🌐 Network Issues:" -ForegroundColor White
+    Write-Host "└─ Network Issues:" -ForegroundColor White
     Write-Host "   ├─ Check internet connectivity" -ForegroundColor Gray
     Write-Host "   └─ Verify Azure service endpoints are accessible" -ForegroundColor Gray
     Write-Host ""
@@ -1638,12 +1639,12 @@ try {
     Write-Host "│  ├─ Create service principals" -ForegroundColor Gray
     Write-Host "│  └─ Assign application permissions" -ForegroundColor Gray
     Write-Host "│" -ForegroundColor Magenta
-    Write-Host "└─ 💡 Contact your Azure AD administrator if you lack these permissions" -ForegroundColor White
+    Write-Host "└─ Contact your Azure AD administrator if you lack these permissions" -ForegroundColor White
     Write-Host ""
     
     Write-Host "╭─ Getting Help" -ForegroundColor Blue
     Write-Host "│" -ForegroundColor Blue
-    Write-Host "├─ 📋 Include this information when requesting support:" -ForegroundColor White
+    Write-Host "├─ Include this information when requesting support:" -ForegroundColor White
     Write-Host "│  ├─ Error message above" -ForegroundColor Gray
     Write-Host "│  ├─ Your Azure region: " -NoNewline -ForegroundColor Gray
     if ($config -and $config.Location) {
@@ -1661,11 +1662,11 @@ try {
     Write-Host "$TerraformDir" -NoNewline -ForegroundColor Yellow
     Write-Host ")" -ForegroundColor Gray
     Write-Host "│" -ForegroundColor Blue
-    Write-Host "├─ 🆘 Aviatrix Support Portal:" -ForegroundColor White
+    Write-Host "├─ Aviatrix Support Portal:" -ForegroundColor White
     Write-Host "│  └─ " -NoNewline -ForegroundColor Blue
     Write-Host "https://support.aviatrix.com" -ForegroundColor Cyan
     Write-Host "│" -ForegroundColor Blue
-    Write-Host "├─ 📖 Documentation:" -ForegroundColor White
+    Write-Host "├─ Documentation:" -ForegroundColor White
     Write-Host "│  └─ " -NoNewline -ForegroundColor Blue
     Write-Host "https://docs.aviatrix.com" -ForegroundColor Cyan
     
