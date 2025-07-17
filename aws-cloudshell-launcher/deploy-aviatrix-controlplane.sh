@@ -642,7 +642,18 @@ create_terraform_config() {
     mkdir -p "$TERRAFORM_DIR"
     
     # Build incoming_ssl_cidrs array
-    local all_cidrs=("$INCOMING_CIDRS")
+    local all_cidrs=()
+    
+    # Parse INCOMING_CIDRS (may be comma-separated)
+    if [[ -n "$INCOMING_CIDRS" ]]; then
+        IFS=',' read -ra incoming_array <<< "$INCOMING_CIDRS"
+        for cidr in "${incoming_array[@]}"; do
+            cidr=$(echo "$cidr" | xargs)  # trim whitespace
+            all_cidrs+=("$cidr")
+        done
+    fi
+    
+    # Add management IPs if provided
     if [[ -n "$MGMT_IPS" ]]; then
         IFS=',' read -ra mgmt_array <<< "$MGMT_IPS"
         for ip in "${mgmt_array[@]}"; do
