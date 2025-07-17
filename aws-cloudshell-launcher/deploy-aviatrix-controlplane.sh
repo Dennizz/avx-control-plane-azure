@@ -456,22 +456,39 @@ get_copilot_choice() {
 }
 
 get_public_ip() {
-    if [[ -z "$INCOMING_CIDRS" ]]; then
-        write_step "Detecting your public IP address for security configuration..."
-        write_info "This IP will be used to configure security groups for controller access"
+    # Always detect CloudShell IP for security
+    write_step "Detecting CloudShell public IP address for security configuration..."
+    
+    local cloudshell_ip
+    if cloudshell_ip=$(curl -s --max-time 10 https://ipinfo.io/ip 2>/dev/null); then
+        cloudshell_ip=$(echo "$cloudshell_ip" | tr -d '[:space:]')
+        write_success "CloudShell public IP detected: $cloudshell_ip"
         
-        local public_ip
-        if public_ip=$(curl -s --max-time 10 https://ipinfo.io/ip 2>/dev/null); then
-            public_ip=$(echo "$public_ip" | tr -d '[:space:]')
-            write_success "Successfully detected public IP: $public_ip"
-            write_hint "Only this IP address will be allowed to access the Aviatrix Controller web interface"
-            INCOMING_CIDRS="$public_ip/32"
+        # If no incoming CIDRs provided via CLI, use CloudShell IP as primary
+        if [[ -z "$INCOMING_CIDRS" ]]; then
+            write_info "Using CloudShell IP as primary access CIDR"
+            INCOMING_CIDRS="$cloudshell_ip/32"
         else
-            write_warning "Could not auto-detect your public IP address"
+            write_info "Adding CloudShell IP to provided incoming CIDRs"
+            # Add CloudShell IP to existing CIDRs if not already included
+            if [[ "$INCOMING_CIDRS" != *"$cloudshell_ip"* ]]; then
+                INCOMING_CIDRS="$INCOMING_CIDRS,$cloudshell_ip/32"
+            fi
+        fi
+        
+        write_hint "CloudShell IP will be allowed to access the Aviatrix Controller web interface"
+    else
+        write_warning "Could not auto-detect CloudShell public IP address"
+        
+        # If no incoming CIDRs provided and can't detect IP, prompt user
+        if [[ -z "$INCOMING_CIDRS" ]]; then
             write_info "You'll need to manually provide your public IP for security configuration"
             write_hint "You can find your IP at https://whatismyipaddress.com"
             INCOMING_CIDRS=$(get_user_input "Your Public IP Address" "" false validate_cidr)
             INCOMING_CIDRS="$INCOMING_CIDRS/32"
+        else
+            write_warning "CloudShell IP detection failed, but using provided incoming CIDRs"
+            write_hint "You may need to manually add CloudShell IP to security groups later"
         fi
     fi
 }
