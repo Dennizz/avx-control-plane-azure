@@ -87,6 +87,7 @@ MGMT_IPS=""
 SKIP_CONFIRMATION=false
 TERRAFORM_ACTION="apply"
 TEST_MODE=false
+INCOMING_CIDRS_PROVIDED=false  # Track if user provided this via CLI
 
 # Colors for output
 RED='\033[0;31m'
@@ -230,6 +231,7 @@ parse_args() {
                 ;;
             -i|--incoming-cidrs)
                 INCOMING_CIDRS="$2"
+                INCOMING_CIDRS_PROVIDED=true
                 shift 2
                 ;;
             -m|--mgmt-ips)
@@ -475,7 +477,9 @@ get_public_ip() {
 }
 
 get_additional_mgmt_ips() {
-    if [[ -z "$MGMT_IPS" ]]; then
+    # Skip prompting if incoming CIDRs were provided via command line
+    # This assumes user doesn't want additional prompts if they provided CLI args
+    if [[ -z "$MGMT_IPS" && "$INCOMING_CIDRS_PROVIDED" != "true" ]]; then
         echo ""
         write_info "Specify additional IP addresses that should have access to the Controller and CoPilot"
         write_info "This is recommended for allowing access from your laptop, office network, etc."
@@ -657,9 +661,9 @@ output "deployment_summary" {
   value = {
     controller_public_ip  = module.aviatrix_controlplane.controller_public_ip
     controller_private_ip = module.aviatrix_controlplane.controller_private_ip
-    controller_url       = module.aviatrix_controlplane.controller_public_ip != null ? "https://\${module.aviatrix_controlplane.controller_public_ip}" : null
+    controller_url       = module.aviatrix_controlplane.controller_public_ip != null ? "https://$${module.aviatrix_controlplane.controller_public_ip}" : null
     copilot_public_ip    = module.aviatrix_controlplane.copilot_public_ip
-    copilot_url         = module.aviatrix_controlplane.copilot_public_ip != null ? "https://\${module.aviatrix_controlplane.copilot_public_ip}" : null
+    copilot_url         = module.aviatrix_controlplane.copilot_public_ip != null ? "https://$${module.aviatrix_controlplane.copilot_public_ip}" : null
     deployment_name     = "$DEPLOYMENT_NAME"
     region             = "$REGION"
     admin_email        = "$ADMIN_EMAIL"
@@ -670,14 +674,14 @@ output "deployment_summary" {
 output "connection_info" {
   description = "Connection information for accessing deployed services"
   value = {
-    controller_login_url = "https://\${module.aviatrix_controlplane.controller_public_ip}"
+    controller_login_url = "https://$${module.aviatrix_controlplane.controller_public_ip}"
     controller_username  = "admin"
-    copilot_login_url   = module.aviatrix_controlplane.copilot_public_ip != null ? "https://\${module.aviatrix_controlplane.copilot_public_ip}" : "Not deployed"
+    copilot_login_url   = module.aviatrix_controlplane.copilot_public_ip != null ? "https://$${module.aviatrix_controlplane.copilot_public_ip}" : "Not deployed"
     next_steps = [
-      "1. Access controller at https://\${module.aviatrix_controlplane.controller_public_ip}",
+      "1. Access controller at https://$${module.aviatrix_controlplane.controller_public_ip}",
       "2. Login with username 'admin' and your configured password",
       "3. Your AWS account is already onboarded and ready to use",
-      $(if [[ "$INCLUDE_COPILOT" == "true" ]]; then echo '"4. Access CoPilot at https://\${module.aviatrix_controlplane.copilot_public_ip}"'; else echo '"4. CoPilot not deployed - can be added later if needed"'; fi)
+      $(if [[ "$INCLUDE_COPILOT" == "true" ]]; then echo '"4. Access CoPilot at https://$${module.aviatrix_controlplane.copilot_public_ip}"'; else echo '"4. CoPilot not deployed - can be added later if needed"'; fi)
     ]
   }
 }
