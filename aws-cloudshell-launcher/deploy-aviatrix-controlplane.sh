@@ -329,10 +329,13 @@ get_user_input() {
     local default_value="${2:-}"
     local is_password="${3:-false}"
     local validation_func="${4:-}"
+    local is_optional="${5:-false}"
     
     while true; do
         if [[ -n "$default_value" ]]; then
             echo -e "${CYAN}$prompt [default: $default_value]: ${NC}"
+        elif [[ "$is_optional" == "true" ]]; then
+            echo -e "${CYAN}$prompt (optional): ${NC}"
         else
             echo -e "${CYAN}$prompt: ${NC}"
         fi
@@ -347,6 +350,12 @@ get_user_input() {
         # Use default if no input provided
         if [[ -z "$input" && -n "$default_value" ]]; then
             input="$default_value"
+        fi
+        
+        # If field is optional and no input, return empty
+        if [[ -z "$input" && "$is_optional" == "true" ]]; then
+            echo ""
+            return 0
         fi
         
         # Validate input if validation function provided
@@ -472,8 +481,9 @@ get_additional_mgmt_ips() {
         write_info "This is recommended for allowing access from your laptop, office network, etc."
         write_hint "Leave empty if you only want to manually edit security groups later"
         
-        local additional_ips
-        additional_ips=$(get_user_input "Additional Management IPs (comma-separated, optional)" "" false)
+        echo -e "${CYAN}Additional Management IPs (comma-separated, optional): ${NC}"
+        read additional_ips
+        
         if [[ -n "$additional_ips" ]]; then
             MGMT_IPS="$additional_ips"
         fi
