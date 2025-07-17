@@ -609,22 +609,6 @@ check_existing_iam_roles() {
     fi
 }
 
-# Get existing IAM role ARNs if they exist
-get_existing_role_arns() {
-    local ec2_role_arn=""
-    local app_role_arn=""
-    
-    if aws iam get-role --role-name "aviatrix-role-ec2" &>/dev/null; then
-        ec2_role_arn=$(aws iam get-role --role-name "aviatrix-role-ec2" --query 'Role.Arn' --output text)
-    fi
-    
-    if aws iam get-role --role-name "aviatrix-role-app" &>/dev/null; then
-        app_role_arn=$(aws iam get-role --role-name "aviatrix-role-app" --query 'Role.Arn' --output text)
-    fi
-    
-    echo "$ec2_role_arn,$app_role_arn"
-}
-
 # Terraform configuration generation
 create_terraform_config() {
     write_step "Creating Terraform configuration..."
@@ -633,11 +617,6 @@ create_terraform_config() {
     write_step "Checking for existing Aviatrix IAM roles..."
     local create_iam_roles
     create_iam_roles=$(check_existing_iam_roles)
-    
-    # Get existing role ARNs if they exist
-    local role_arns
-    role_arns=$(get_existing_role_arns)
-    IFS=',' read -r ec2_role_arn app_role_arn <<< "$role_arns"
     
     # Create deployment directory
     if [[ -d "$TERRAFORM_DIR" ]]; then
@@ -709,21 +688,6 @@ module "aviatrix_controlplane" {
     account_onboarding       = true
   }
 EOF
-
-    # Add existing role ARNs if they exist
-    if [[ -n "$ec2_role_arn" && "$ec2_role_arn" != "None" ]]; then
-        cat >> "$TERRAFORM_DIR/main.tf" << EOF
-  
-  # Use existing IAM roles
-  ec2_role_arn = "$ec2_role_arn"
-EOF
-    fi
-    
-    if [[ -n "$app_role_arn" && "$app_role_arn" != "None" ]]; then
-        cat >> "$TERRAFORM_DIR/main.tf" << EOF
-  app_role_arn = "$app_role_arn"
-EOF
-    fi
 
     if [[ "$INCLUDE_COPILOT" == "true" ]]; then
         cat >> "$TERRAFORM_DIR/main.tf" << EOF
