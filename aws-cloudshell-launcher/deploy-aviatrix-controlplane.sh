@@ -568,8 +568,6 @@ test_prerequisites() {
 
 # Check for existing IAM roles
 check_existing_iam_roles() {
-    write_step "Checking for existing Aviatrix IAM roles..."
-    
     local roles_exist=false
     local required_roles=(
         "aviatrix-role-ec2"
@@ -589,13 +587,14 @@ check_existing_iam_roles() {
         fi
     done
     
+    # Output messages to stderr so they don't interfere with return value
     if [[ "$roles_exist" == "true" ]]; then
-        write_success "Found existing Aviatrix IAM roles: ${existing_roles[*]}"
+        write_success "Found existing Aviatrix IAM roles: ${existing_roles[*]}" >&2
         if [[ ${#missing_roles[@]} -gt 0 ]]; then
-            write_warning "Missing IAM roles: ${missing_roles[*]}"
-            write_info "The module will create the missing roles only"
+            write_warning "Missing IAM roles: ${missing_roles[*]}" >&2
+            write_info "The module will create the missing roles only" >&2
         else
-            write_info "All required IAM roles exist - skipping IAM role creation in module"
+            write_info "All required IAM roles exist - skipping IAM role creation in module" >&2
         fi
         
         # If all roles exist, we can skip IAM role creation entirely
@@ -605,7 +604,7 @@ check_existing_iam_roles() {
             echo "true"   # Create missing IAM roles
         fi
     else
-        write_info "No existing Aviatrix IAM roles found - will create all required roles"
+        write_info "No existing Aviatrix IAM roles found - will create all required roles" >&2
         echo "true"  # Create IAM roles
     fi
 }
@@ -631,6 +630,7 @@ create_terraform_config() {
     write_step "Creating Terraform configuration..."
     
     # Check for existing IAM roles
+    write_step "Checking for existing Aviatrix IAM roles..."
     local create_iam_roles
     create_iam_roles=$(check_existing_iam_roles)
     
