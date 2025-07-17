@@ -566,9 +566,78 @@ test_prerequisites() {
     fi
 }
 
+# Check for existing IAM roles
+check_existing_iam_roles() {
+    write_step "Checking for existing Aviatrix IAM roles..."
+    
+    local roles_exist=false
+    local required_roles=(
+        "aviatrix-role-ec2"
+        "aviatrix-role-app"
+    )
+    
+    local existing_roles=()
+    local missing_roles=()
+    
+    # Check each required role
+    for role in "${required_roles[@]}"; do
+        if aws iam get-role --role-name "$role" &>/dev/null; then
+            existing_roles+=("$role")
+            roles_exist=true
+        else
+            missing_roles+=("$role")
+        fi
+    done
+    
+    if [[ "$roles_exist" == "true" ]]; then
+        write_success "Found existing Aviatrix IAM roles: ${existing_roles[*]}"
+        if [[ ${#missing_roles[@]} -gt 0 ]]; then
+            write_warning "Missing IAM roles: ${missing_roles[*]}"
+            write_info "The module will create the missing roles only"
+        else
+            write_info "All required IAM roles exist - skipping IAM role creation in module"
+        fi
+        
+        # If all roles exist, we can skip IAM role creation entirely
+        if [[ ${#missing_roles[@]} -eq 0 ]]; then
+            echo "false"  # Don't create IAM roles
+        else
+            echo "true"   # Create missing IAM roles
+        fi
+    else
+        write_info "No existing Aviatrix IAM roles found - will create all required roles"
+        echo "true"  # Create IAM roles
+    fi
+}
+
+# Get existing IAM role ARNs if they exist
+get_existing_role_arns() {
+    local ec2_role_arn=""
+    local app_role_arn=""
+    
+    if aws iam get-role --role-name "aviatrix-role-ec2" &>/dev/null; then
+        ec2_role_arn=$(aws iam get-role --role-name "aviatrix-role-ec2" --query 'Role.Arn' --output text)
+    fi
+    
+    if aws iam get-role --role-name "aviatrix-role-app" &>/dev/null; then
+        app_role_arn=$(aws iam get-role --role-name "aviatrix-role-app" --query 'Role.Arn' --output text)
+    fi
+    
+    echo "$ec2_role_arn,$app_role_arn"
+}
+
 # Terraform configuration generation
 create_terraform_config() {
     write_step "Creating Terraform configuration..."
+    
+    # Check for existing IAM roles
+    local create_iam_roles
+    create_iam_roles=$(check_existing_iam_roles)
+    
+    # Get existing role ARNs if they exist
+    local role_arns
+    role_arns=$(get_existing_role_arns)
+    IFS=',' read -r ec2_role_arn app_role_arn <<< "$role_arns"
     
     # Create deployment directory
     if [[ -d "$TERRAFORM_DIR" ]]; then
@@ -636,10 +705,25 @@ module "aviatrix_controlplane" {
     controller_initialization = true
     copilot_deployment       = $(echo "$INCLUDE_COPILOT" | tr '[:upper:]' '[:lower:]')
     copilot_initialization   = $(echo "$INCLUDE_COPILOT" | tr '[:upper:]' '[:lower:]')
-    iam_roles                = true
+    iam_roles                = $create_iam_roles
     account_onboarding       = true
   }
 EOF
+
+    # Add existing role ARNs if they exist
+    if [[ -n "$ec2_role_arn" && "$ec2_role_arn" != "None" ]]; then
+        cat >> "$TERRAFORM_DIR/main.tf" << EOF
+  
+  # Use existing IAM roles
+  ec2_role_arn = "$ec2_role_arn"
+EOF
+    fi
+    
+    if [[ -n "$app_role_arn" && "$app_role_arn" != "None" ]]; then
+        cat >> "$TERRAFORM_DIR/main.tf" << EOF
+  app_role_arn = "$app_role_arn"
+EOF
+    fi
 
     if [[ "$INCLUDE_COPILOT" == "true" ]]; then
         cat >> "$TERRAFORM_DIR/main.tf" << EOF
@@ -655,18 +739,25 @@ EOF
 EOF
 
     # Create outputs.tf
-    cat > "$TERRAFORM_DIR/outputs.tf" << EOF
+    local copilot_step
+    if [[ "$INCLUDE_COPILOT" == "true" ]]; then
+        copilot_step='format("4. Access CoPilot at https://%s", module.aviatrix_controlplane.copilot_public_ip)'
+    else
+        copilot_step='"4. CoPilot not deployed - can be added later if needed"'
+    fi
+    
+    cat > "$TERRAFORM_DIR/outputs.tf" << 'HEREDOC_EOF'
 output "deployment_summary" {
   description = "Summary of deployed resources"
   value = {
     controller_public_ip  = module.aviatrix_controlplane.controller_public_ip
     controller_private_ip = module.aviatrix_controlplane.controller_private_ip
-    controller_url       = module.aviatrix_controlplane.controller_public_ip != null ? "https://$${module.aviatrix_controlplane.controller_public_ip}" : null
+    controller_url       = module.aviatrix_controlplane.controller_public_ip != null ? format("https://%s", module.aviatrix_controlplane.controller_public_ip) : null
     copilot_public_ip    = module.aviatrix_controlplane.copilot_public_ip
-    copilot_url         = module.aviatrix_controlplane.copilot_public_ip != null ? "https://$${module.aviatrix_controlplane.copilot_public_ip}" : null
-    deployment_name     = "$DEPLOYMENT_NAME"
-    region             = "$REGION"
-    admin_email        = "$ADMIN_EMAIL"
+    copilot_url         = module.aviatrix_controlplane.copilot_public_ip != null ? format("https://%s", module.aviatrix_controlplane.copilot_public_ip) : null
+    deployment_name     = "DEPLOYMENT_NAME_PLACEHOLDER"
+    region             = "REGION_PLACEHOLDER"
+    admin_email        = "ADMIN_EMAIL_PLACEHOLDER"
   }
   sensitive = false
 }
@@ -674,18 +765,24 @@ output "deployment_summary" {
 output "connection_info" {
   description = "Connection information for accessing deployed services"
   value = {
-    controller_login_url = "https://$${module.aviatrix_controlplane.controller_public_ip}"
+    controller_login_url = format("https://%s", module.aviatrix_controlplane.controller_public_ip)
     controller_username  = "admin"
-    copilot_login_url   = module.aviatrix_controlplane.copilot_public_ip != null ? "https://$${module.aviatrix_controlplane.copilot_public_ip}" : "Not deployed"
+    copilot_login_url   = module.aviatrix_controlplane.copilot_public_ip != null ? format("https://%s", module.aviatrix_controlplane.copilot_public_ip) : "Not deployed"
     next_steps = [
-      "1. Access controller at https://$${module.aviatrix_controlplane.controller_public_ip}",
+      format("1. Access controller at https://%s", module.aviatrix_controlplane.controller_public_ip),
       "2. Login with username 'admin' and your configured password",
       "3. Your AWS account is already onboarded and ready to use",
-      $(if [[ "$INCLUDE_COPILOT" == "true" ]]; then echo '"4. Access CoPilot at https://$${module.aviatrix_controlplane.copilot_public_ip}"'; else echo '"4. CoPilot not deployed - can be added later if needed"'; fi)
+      COPILOT_STEP_PLACEHOLDER
     ]
   }
 }
-EOF
+HEREDOC_EOF
+
+    # Replace placeholders with actual values
+    sed -i "s/DEPLOYMENT_NAME_PLACEHOLDER/$DEPLOYMENT_NAME/g" "$TERRAFORM_DIR/outputs.tf"
+    sed -i "s/REGION_PLACEHOLDER/$REGION/g" "$TERRAFORM_DIR/outputs.tf"
+    sed -i "s/ADMIN_EMAIL_PLACEHOLDER/$ADMIN_EMAIL/g" "$TERRAFORM_DIR/outputs.tf"
+    sed -i "s|COPILOT_STEP_PLACEHOLDER|$copilot_step|g" "$TERRAFORM_DIR/outputs.tf"
 
     write_success "Terraform configuration created in $TERRAFORM_DIR"
 }
